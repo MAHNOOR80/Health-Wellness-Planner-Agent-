@@ -86,12 +86,15 @@ output_check_agent = Agent(
 )
 
 @output_guardrail
-async def health_output_guardrail(
-    ctx: RunContextWrapper[None],
-    agent: Agent,
-    output: MessageOutput
-) -> GuardrailFunctionOutput:
+async def health_output_guardrail(ctx, agent, output):
+    print("🛡️ health_output_guardrail called!")
     output_result = await Runner.run(output_check_agent, output, run_config=config)
+    print("✅ Guardrail Result:", output_result.final_output)
+
+    if not output_result.final_output.is_safe:
+        print("❌ Output was marked UNSAFE. Triggering guardrail.")
+    else:
+        print("✅ Output is safe. No issues found.")
 
     return GuardrailFunctionOutput(
         output_info=output_result.final_output,
