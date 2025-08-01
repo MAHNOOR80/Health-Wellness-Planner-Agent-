@@ -21,6 +21,9 @@ my_hooks=Custom_hooks()
 class Custom_agent_hooks(AgentHooks):
     async def on_start(self,ctx:RunContextWrapper,agent:Agent):
         print(f"🤖 '{agent.name}' is thinking ..")
+
+        
+
     
     async def on_handoff(self,ctx:RunContextWrapper,agent:Agent,source):
         print(f"🤝 Handoff from agent '{source.name}' to agent '{agent.name}'")

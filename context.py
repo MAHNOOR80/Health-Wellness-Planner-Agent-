@@ -1,6 +1,6 @@
 from connection import config
 from dataclasses import dataclass
-from typing import Optional, List, Dict
+from typing import Any, Optional, List, Dict
 from pydantic import BaseModel
 
 
@@ -14,3 +14,4 @@ class User_info(BaseModel):
     injury_notes: Optional[str] = None
     handoff_logs: Optional[List[str]] = None
     progress_logs: Optional[List[Dict[str, str]]] = None
+    history: Optional[List[Dict[str, Any]]] = None 

@@ -38,7 +38,7 @@ async def goal_guardrail_function(
 
     return GuardrailFunctionOutput(
         output_info=GoalOutputType(goal={}),
-        tripwire_triggered=True
+        tripwire_triggered=False  
     )
 
 #  3. Final Agent for Goal Validation
