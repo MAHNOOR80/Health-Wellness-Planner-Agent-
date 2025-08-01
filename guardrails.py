@@ -73,7 +73,15 @@ class HealthOutputValidation(BaseModel):
 
 output_check_agent = Agent(
     name="Output Quality Checker",
-    instructions="Check if the health assistant's response is safe, non-medical, and appropriate for general wellness advice.",
+    instructions=(
+          "You are validating a health assistant's message to ensure it's safe, non-medical, "
+        "and suitable for general wellness guidance.\n\n"
+        "Return your result in this JSON format ONLY:\n"
+        "{\n"
+        "  \"is_safe\": true or false,\n"
+        "  \"summary\": \"Brief explanation of why it's safe or not.\"\n"
+        "}"
+    ),
     output_type=HealthOutputValidation
 )
 

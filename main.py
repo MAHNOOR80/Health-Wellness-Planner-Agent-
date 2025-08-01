@@ -1,4 +1,4 @@
-from agents import Agent, Runner
+from agents import Agent, Runner,RunContextWrapper
 from connection import config
 from MultipleAgents.escalation_agent import escalation_agent
 from MultipleAgents.injury_support_agent import InjurySupportAgent
@@ -11,6 +11,25 @@ from tools.tracker import ProgressTrackerTool
 from tools.goal_analyzer import GoalAnalyzerTool
 from openai.types.responses import ResponseTextDeltaEvent
 from guardrails import health_output_guardrail
+from context import User_info
+from hooks import my_hooks
+from hooks import my_agent_hooks
+
+
+user_context = User_info(
+    name="Mahnoor",
+    uid=1,
+    goal={"type": "weight loss"},
+    diet_preferences="vegetarian",
+    workout_plan={"days": "Monday, Thursday"},
+    meal_plan=["Oats", "Salad", "Fruits"],
+    injury_notes="Back pain",
+    handoff_logs=["Initial setup"],
+    progress_logs=[{"date": "2025-07-31", "progress": "Started diet"}]
+)
+
+
+wrapped_context=RunContextWrapper(user_context)
 
 
 main_agent=Agent(
@@ -36,7 +55,10 @@ main_agent=Agent(
         "- For hydration or water intake:\n"
         "  - Use HydrationPlannerTool to recommend daily water intake.\n"
         "- For goal progress tracking:\n"
-        "  - Use ProgressTrackerTool if the user wants to review or update progress.\n\n"
+        "- For goal progress tracking:\n"
+        "  - Use ProgressTrackerTool if the user wants to review or update progress.\n"
+        "  - If the user says things like 'I completed my morning run on July 31st, 2025', or 'Mark yoga as done today', extract the activity, status (e.g., Completed), and date (preferably in YYYY-MM-DD format).\n"
+        "  - Then use ProgressTrackerTool with those details.\n\n"
         "🙋‍♀️ USER INTERACTION RULES:\n"
         "- Be friendly, motivating, and supportive.\n"
         "- Use emojis or bullet points for clear formatting.\n"
@@ -54,24 +76,35 @@ main_agent=Agent(
         "- Build a personalized and helpful response\n\n"
         "When you use tools like meal_planner, show the full meal plan to the user in a readable format.\n"
         "Do not just say it has been generated. Actually list the meals."
+        
     ),
 
     handoffs=[escalation_agent,InjurySupportAgent,NutritionExpertAgent],
     tools=[meal_planner,WorkoutRecommenderTool,CheckinSchedulerTool,ProgressTrackerTool,GoalAnalyzerTool],
-    output_guardrails=[health_output_guardrail]
+    output_guardrails=[health_output_guardrail],
+    hooks=my_agent_hooks
 
 )
 
 
 async def main():
-   prompt=input("Tell me your health or fitness goals:")
-   result=  Runner.run_streamed(main_agent,prompt,run_config=config)
+    print("💬 Type your health or fitness goals below.")
+    print("❌ Type 'exit' or 'quit' to end the conversation.\n")
 
-   async for event in result.stream_events():
-           if event.type == "raw_response_event" and isinstance(event.data ,ResponseTextDeltaEvent):
-                print(event.data.delta,end="",flush=True)
+    while True:
+        prompt = input("Tell me your health or fitness goals: ")
+        if prompt.lower() in ['exit', 'quit']:
+            print("👋 Goodbye!")
+            break
 
-   
+        result = Runner.run_streamed(main_agent, prompt, run_config=config, context=wrapped_context,hooks=my_hooks)
+
+        async for event in result.stream_events():
+            if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+                print(event.data.delta, end="", flush=True)
+        print("\n") 
+
+
    
 
 

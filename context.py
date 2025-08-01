@@ -1,9 +1,10 @@
 from connection import config
 from dataclasses import dataclass
 from typing import Optional, List, Dict
+from pydantic import BaseModel
 
-@dataclass
-class User_info:
+
+class User_info(BaseModel):
     name: str
     uid: int
     goal: Optional[Dict[str, str]] = None

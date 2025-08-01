@@ -1,8 +1,8 @@
-from agents import function_tool
-
+from agents import function_tool,RunContextWrapper
+from context import User_info
 
 @function_tool
-async def meal_planner(diet_preferences:str)->list[str]:
+async def meal_planner(ctx:RunContextWrapper[User_info],diet_preferences:str)->list[str]:
     """
      Generate a 7-day vegetarian meal plan including breakfast, lunch, and dinner for each day.
     """
@@ -32,5 +32,7 @@ async def meal_planner(diet_preferences:str)->list[str]:
         )
 
         meal_plan.append(day_plan)
+    
+    ctx.context.meal_plan=meal_plan
 
     return "\n".join(meal_plan)

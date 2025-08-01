@@ -1,5 +1,6 @@
-from agents import function_tool
+from agents import function_tool,RunContextWrapper
 from typing import TypedDict
+from context import User_info
 
 
 class WorkoutGoal(TypedDict):
@@ -11,7 +12,7 @@ class WorkoutPlan(TypedDict):
 
 
 @function_tool
-def WorkoutRecommenderTool(goal:WorkoutGoal)->WorkoutPlan:
+def WorkoutRecommenderTool(ctx:RunContextWrapper[User_info],goal:WorkoutGoal)->WorkoutPlan:
     """
     Recommends a 7-day workout plan based on the user's fitness goal.
     
@@ -34,5 +35,7 @@ def WorkoutRecommenderTool(goal:WorkoutGoal)->WorkoutPlan:
 
     else:
         plan = {"workout_plan": "Currently, only strength training plans are supported."}
+    
+    ctx.context.workout_plan=plan
 
     return plan
